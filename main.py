@@ -1,4 +1,5 @@
 import json
+import sys
 import argparse
 
 from util.HashType import HashType
@@ -30,12 +31,22 @@ def main():
         parser.print_help()
         return
     
-    filehash = args.hash
-    hashtype = HashType.MD5 if len(filehash) == 32 else len(filehash) == 32
+    fileHash = args.hash
+    hashType = None
+    if len(fileHash) == 32:
+        hashType = HashType.MD5
+    elif len(fileHash) == 40:
+        hashType = HashType.SHA1
+    elif len(fileHash) == 64:
+        hashType = HashType.SHA256
+    
+    if hashType is None:
+        print('Error: Only MDD5, SHA1, SHA256 can be used for hash type.', file=sys.stderr)
+        sys.exit(1)
 
-    triage_result = searchTriage(HashType.MD5, filehash, TRIAGE_APIKEY)
-    hybridanalysis_result = searchHybridAnalysis(filehash, HYBRIDANALYSIS_APIKEY)
-    virustotal_result = serchVirusTotal(filehash, VIRUSTOTAL_APIKEY)
+    triage_result = searchTriage(hashType, fileHash, TRIAGE_APIKEY)
+    hybridanalysis_result = searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY)
+    virustotal_result = serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY)
     
     print(json.dumps(triage_result, indent=4))
     print(json.dumps(hybridanalysis_result, indent=4))

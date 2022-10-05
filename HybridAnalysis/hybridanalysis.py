@@ -14,8 +14,7 @@ def searchHybridAnalysis(file_hash, api_key):
         response = Session.request('POST', 'https://www.hybrid-analysis.com/api/v2/search/hashes', data={'hashes[]': file_hash})
         response.raise_for_status()
     except RequestException as e:
-        print(e.response.text)
-        return
+        return e.response.text
 
     result = response.json()
     

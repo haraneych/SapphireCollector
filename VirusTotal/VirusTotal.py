@@ -18,5 +18,4 @@ def serchVirusTotal(hash: str, apikey: str):
         else:
             res.raise_for_status()
     except RequestException as e:
-        print(e.response.text)
-        return
+        return e.response.text

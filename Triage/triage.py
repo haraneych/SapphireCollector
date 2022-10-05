@@ -18,8 +18,7 @@ def searchTriage(hashType: HashType,fileHash: string, apiKey: string):
         response = requests.get(url[hashType]+fileHash, headers=headers)
         response.raise_for_status()
     except RequestException as e:
-        print(e.response.text)
-        return
+        return e.response.text
     result = response.json()
     return result
     #print(json.dumps(result, indent=4))

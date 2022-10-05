@@ -6,7 +6,7 @@ from util.HashType import HashType
 from Triage.triage import searchTriage
 from HybridAnalysis.hybridanalysis import searchHybridAnalysis
 from VirusTotal.VirusTotal import serchVirusTotal
-from api_keys import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY
+from api_keys2 import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY
 
 
 def command_welcome():
@@ -24,6 +24,7 @@ Welcome to SapphireCollector!
 def main():
     parser = argparse.ArgumentParser(description="Tool to search and collect malware information from multiple malware database services by hash value")
     parser.add_argument("hash", nargs="?", help="Hash value of malware to search for. MDD5, SHA1, SHA256 can be used.")
+    parser.add_argument("-o", "--output", help="File path to output results.")
     args = parser.parse_args()
 
     if args.hash is None:
@@ -44,13 +45,19 @@ def main():
         print('Error: Only MDD5, SHA1, SHA256 can be used for hash type.', file=sys.stderr)
         sys.exit(1)
 
-    triage_result = searchTriage(hashType, fileHash, TRIAGE_APIKEY)
-    hybridanalysis_result = searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY)
-    virustotal_result = serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY)
+    triage_result = "[[Triage]]\n" + json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4)
+    hybridanalysis_result = "[[Hybrid Anarysis]]\n" + json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)
+    virustotal_result = "[[VirusTotal]]\n" + json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)
+
+    result_list = [triage_result, hybridanalysis_result, virustotal_result]
+    all_result_text = "\n".join(result_list)
     
-    print(json.dumps(triage_result, indent=4))
-    print(json.dumps(hybridanalysis_result, indent=4))
-    print(json.dumps(virustotal_result, indent=4))
+    if args.output is None:
+        print(all_result_text)
+    else:
+        output_filepath = args.output
+        with open(output_filepath, "w") as f:
+            f.write(all_result_text)
 
 
 if __name__ == "__main__":

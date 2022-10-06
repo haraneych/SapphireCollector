@@ -6,7 +6,7 @@ from util.HashType import HashType
 from Triage.triage import searchTriage
 from HybridAnalysis.hybridanalysis import searchHybridAnalysis
 from VirusTotal.VirusTotal import serchVirusTotal
-from api_keys2 import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY
+from api_keys import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY
 
 
 def command_welcome():

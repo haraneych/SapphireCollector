@@ -20,5 +20,12 @@ def searchTriage(hashType: HashType,fileHash: string, apiKey: string):
     except RequestException as e:
         return e.response.text
     result = response.json()
+    id = result["data"][0]['id']
+    try:
+        response = requests.get(f"https://tria.ge/api/v0/samples/{id}/overview.json", headers=headers)
+        response.raise_for_status()
+    except RequestException as e:
+        return e.response.text
+    result = response.json()
     return result
     #print(json.dumps(result, indent=4))

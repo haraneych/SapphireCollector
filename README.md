@@ -20,8 +20,8 @@ SapphireCollectorは各マルウェア解析サービスから、ハッシュ値
 調査したいマルウェアについてハッシュ値(MD5 or SHA1 or SHA256)を準備してください。
 以下のコマンドを実行することで、各種情報がターミナルに標準出力されます。
 
-    python3 sapphire_collector.py ハッシュ値(MD5 or SHA1 or SHA256)
-    Example:python3 sapphire_collector.py 84d164fbfe0982a00404cb3d7b164bf5 > output.txt
+    python3 sapphire_collector.py ハッシュ値(MD5 or SHA1 or SHA256) -o 出力先ファイル名
+    Example:python3 sapphire_collector.py 84d164fbfe0982a00404cb3d7b164bf5 -o output.txt
 
 ヘルプの表示
 

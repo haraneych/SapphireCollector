@@ -23,7 +23,7 @@ Welcome to SapphireCollector!
 
 def main():
     parser = argparse.ArgumentParser(description="Tool to search and collect malware information from multiple malware database services by hash value")
-    parser.add_argument("hash", nargs="?", help="Hash value of malware to search for. MDD5, SHA1, SHA256 can be used.")
+    parser.add_argument("hash", nargs="?", help="Hash value of malware to search for. MD5, SHA1, SHA256 can be used.")
     parser.add_argument("-o", "--output", help="File path to output results.")
     args = parser.parse_args()
 

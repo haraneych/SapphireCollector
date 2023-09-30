@@ -21,7 +21,6 @@ Welcome to SapphireCollector!
 """)
 
 def HybridRequiredData(hybridanalysis_result):
-    data_list = json.loads(hybridanalysis_result)
     
     tags = []
     name= []
@@ -31,6 +30,7 @@ def HybridRequiredData(hybridanalysis_result):
     analysis_start_time=[]
     hosts=[]
     domains=[]
+    signatures_list = []
     Number_of_matchs = 0
 
     def maxScore(score_list):
@@ -55,6 +55,8 @@ def HybridRequiredData(hybridanalysis_result):
         new_list = sorted(list(set(your_list)))
         return new_list
     
+    
+    data_list = json.loads(hybridanalysis_result)
     
     for k in range(len(data_list)):
         Number_of_matchs = Number_of_matchs + 1
@@ -84,6 +86,22 @@ def HybridRequiredData(hybridanalysis_result):
         hosts_list = data["hosts"]
         for i in range(len(hosts_list)):
             hosts.append(str(k+1) + ">"+ hosts_list[i])
+        
+        signatures = data["signatures"]
+
+        if not signatures:
+            continue
+
+        for i in range(len(signatures)):
+            name_signature = data["signatures"][i]["name"]
+            description_signature = data["signatures"][i]["description"]
+
+            OneSignatureData ={
+                "name": name_signature,
+                "description":description_signature
+            }
+
+            signatures_list.append(OneSignatureData)
 
     
     tags = Duplicate_removal_and_sorting(tags)
@@ -107,6 +125,7 @@ def HybridRequiredData(hybridanalysis_result):
         "analsis_start_time": analysis_start_time,
         "domains" : domains,
         "hosts" : hosts,
+        "signatures":signatures_list
     }
         
     result = json.dumps(OnlyNeedData,indent=5)

@@ -65,27 +65,27 @@ def HybridRequiredData(hybridanalysis_result):
         for i in range(len(submiissions)):
             target_name= submiissions[i]["filename"]
             target_url = submiissions[i]["url"]
-            name.append(str(k+1) + ">" +target_name)
+            name.append(str(k+1) + ">" +str(target_name))
             url.append(str(k+1) + ">" +str(target_url))
         
         classificationtags_list = data["classification_tags"]
         tags_list = data["tags"]
         for i in range(len(classificationtags_list)):
-            tags.append(str(k+1) + ">"+ classificationtags_list[i])
+            tags.append(str(k+1) + ">"+ str(classificationtags_list[i]))
         for i in range(len(tags_list)):
-            tags.append(str(k+1) + ">" + tags_list[i])
+            tags.append(str(k+1) + ">" + str(tags_list[i]))
 
         score_list.append(data["threat_score"])
-        vx_family.append(str(k+1) +">" +data["vx_family"])
-        analysis_start_time.append(str(k+1) + ">" +data["analysis_start_time"])
+        vx_family.append(str(k+1) +">" +str(data["vx_family"]))
+        analysis_start_time.append(str(k+1) + ">" +str(data["analysis_start_time"]))
 
         domains_list = data["domains"]
         for i in range(len(domains_list)):
-            domains.append(str(k+1)+ ">"+ domains_list[i])
+            domains.append(str(k+1)+ ">"+ str(domains_list[i]))
 
         hosts_list = data["hosts"]
         for i in range(len(hosts_list)):
-            hosts.append(str(k+1) + ">"+ hosts_list[i])
+            hosts.append(str(k+1) + ">"+ str(hosts_list[i]))
         
         signatures = data["signatures"]
 

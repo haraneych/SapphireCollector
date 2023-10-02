@@ -81,7 +81,9 @@ def HybridRequiredData(hybridanalysis_result):
 
         domains_list = data["domains"]
         for i in range(len(domains_list)):
-            domains.append(str(k+1)+ ">"+ str(domains_list[i]))
+            domain = str(domains_list[i])
+            codebrock_domain = domain.replace(".","[.]")
+            domains.append(str(k+1)+ ">"+ codebrock_domain)
 
         hosts_list = data["hosts"]
         for i in range(len(hosts_list)):

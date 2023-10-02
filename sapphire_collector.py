@@ -5,7 +5,7 @@ import argparse
 from util.HashType import HashType
 from Triage.triage import searchTriage
 from HybridAnalysis.hybridanalysis import searchHybridAnalysis
-from VirusTotal.VirusTotal import serchVirusTotal
+from VirusTotal.VirusTotal import serchVirusTotal,extract_json,UnixTime_to_Standard_time
 from api_keys import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY
 
 
@@ -144,7 +144,7 @@ Triage:{triage_result_json["tag"]}
 Hybrid analysis: {hybridanalysis_result_json["tags"]}
 
 <score>
-VuirsTotal:{virustotal_result_json["malicious"]}/100
+VuirsTotal:{virustotal_result_json["malicious"]}/{virustotal_result_json["malicious"]+virustotal_result_json["undetected"]}
 Triage:{triage_result_json["score"]}/10
 Hybrid analysis: {hybridanalysis_result_json["score"]}/100
 
@@ -163,6 +163,8 @@ Hybrid analysis: {hybridanalysis_result_json["hosts"]}
 
 
 """)
+
+
 
 
 def main():
@@ -189,36 +191,26 @@ def main():
         print('Error: Only MDD5, SHA1, SHA256 can be used for hash type.', file=sys.stderr)
         sys.exit(1)
     
-
-    #従来
-    # triage_result = "[[Triage]]\n" + json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4)
-    # hybridanalysis_result = "[[Hybrid Anarysis]]\n" + HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4))
-    # virustotal_result = "[[VirusTotal]]\n" + json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)
-    # result_list = [triage_result, hybridanalysis_result, virustotal_result]
-    # all_result_text = "\n".join(result_list)
-
+    #本番で使う////
+    hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
+    # triage_result_json = json.loads(json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4))
+    virustotal_result_json = extract_json(json.loads(json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)))
+    #本番ここまで////
     
-    with open("VT.json","r") as file:
-        virustotal_result_json = json.load(file)
     
+    #ここから(削除予定)////
     with open("resultTriage.json","r") as file:
         triage_result_json = json.load(file)
-    
-    #今回
-    hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
-    # triage_result_json = {}
-    # virustotal_result_json = {}
+    #ここまで/////
 
 
-    
+
     if args.output is None:
         output_format(hybridanalysis_result_json,triage_result_json,virustotal_result_json)
-        # print(all_result_text)
     else:
         output_filepath = args.output
         with open(output_filepath, "w") as f:
             f.write(output_format((hybridanalysis_result_json,triage_result_json,virustotal_result_json)))
-            # f.write(all_result_text)
 
 
 if __name__ == "__main__":

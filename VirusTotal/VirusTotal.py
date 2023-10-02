@@ -1,4 +1,4 @@
-#import json
+import json
 import requests
 from requests import RequestException
 
@@ -19,3 +19,20 @@ def serchVirusTotal(hash: str, apikey: str):
             res.raise_for_status()
     except RequestException as e:
         return e.response.text
+    
+def extract_json(data):
+    try:
+        attribute = data["data"]["attributes"]
+        extracted_data = {}
+        extracted_data["name"] = attribute["names"]
+        extracted_data["tags"] = attribute["tags"]
+        extracted_data["malicious"] = attribute["last_analysis_stats"]["malicious"]
+        extracted_data["undetected"] = attribute["last_analysis_stats"]["undetected"]
+        extracted_data["start_time"] = attribute["first_submission_date"]
+        extracted_data["c2"] = ""
+        extracted_data["description"] = attribute["crowdsourced_ids_results"]
+        return extracted_data
+    except json.JSONDecodeError:
+        return None  # 不正なJSONの場合はNoneを返す
+    
+    

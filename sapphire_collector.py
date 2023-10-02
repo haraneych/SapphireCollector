@@ -81,9 +81,7 @@ def HybridRequiredData(hybridanalysis_result):
 
         domains_list = data["domains"]
         for i in range(len(domains_list)):
-            domain = str(domains_list[i])
-            codebrock_domain = domain.replace(".","[.]")
-            domains.append(str(k+1)+ ">"+ codebrock_domain)
+            domains.append(str(k+1)+ ">"+ str(domains_list[i]))
 
         hosts_list = data["hosts"]
         for i in range(len(hosts_list)):
@@ -163,7 +161,6 @@ def main():
     virustotal_result = "[[VirusTotal]]\n" + json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)
     result_list = [triage_result, hybridanalysis_result, virustotal_result]
     all_result_text = "\n".join(result_list)
-
 
 
     

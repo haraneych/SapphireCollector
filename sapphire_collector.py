@@ -131,6 +131,39 @@ def HybridRequiredData(hybridanalysis_result):
     result = json.dumps(OnlyNeedData,indent=5)
     return result
 
+def output_format(hybridanalysis_result_json,triage_result_json,virustotal_result_json):
+    print(f"""
+<name>
+VuirsTotal:{virustotal_result_json["name"]}
+Triage:
+Hybrid analysis: {hybridanalysis_result_json["name"]}
+
+<tags>
+VuirsTotal:{virustotal_result_json["tags"]}
+Triage:{triage_result_json["tag"]}
+Hybrid analysis: {hybridanalysis_result_json["tags"]}
+
+<score>
+VuirsTotal:{virustotal_result_json["malicious"]}/100
+Triage:{triage_result_json["score"]}/10
+Hybrid analysis: {hybridanalysis_result_json["score"]}/100
+
+<analysis start time>
+VuirsTotal:{virustotal_result_json["start_time"]}
+Triage:{triage_result_json["analsys_start_time"]}
+Hybrid analysis: {hybridanalysis_result_json["analsis_start_time"]}
+
+<Suspected IP Address of C2 Server>
+VuirsTotal:{virustotal_result_json["c2"]}
+Triage:{triage_result_json["C2ip"][0]["iocs"]["ips"]}
+Hybrid analysis: {hybridanalysis_result_json["hosts"]}
+
+<Summary of malware behavior>
+ここにChatGPTの要約をいれる
+
+
+""")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Tool to search and collect malware information from multiple malware database services by hash value")
@@ -155,22 +188,40 @@ def main():
     if hashType is None:
         print('Error: Only MDD5, SHA1, SHA256 can be used for hash type.', file=sys.stderr)
         sys.exit(1)
+    
 
-    triage_result = "[[Triage]]\n" + json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4)
-    hybridanalysis_result = "[[Hybrid Anarysis]]\n" + HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4))
-    virustotal_result = "[[VirusTotal]]\n" + json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)
-    result_list = [triage_result, hybridanalysis_result, virustotal_result]
-    all_result_text = "\n".join(result_list)
+    #従来
+    # triage_result = "[[Triage]]\n" + json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4)
+    # hybridanalysis_result = "[[Hybrid Anarysis]]\n" + HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4))
+    # virustotal_result = "[[VirusTotal]]\n" + json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)
+    # result_list = [triage_result, hybridanalysis_result, virustotal_result]
+    # all_result_text = "\n".join(result_list)
+
+    
+    with open("VT.json","r") as file:
+        virustotal_result_json = json.load(file)
+    
+    with open("resultTriage.json","r") as file:
+        triage_result_json = json.load(file)
+    
+    #今回
+    hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
+    # triage_result_json = {}
+    # virustotal_result_json = {}
 
 
     
     if args.output is None:
-        print(all_result_text)
+        output_format(hybridanalysis_result_json,triage_result_json,virustotal_result_json)
+        # print(all_result_text)
     else:
         output_filepath = args.output
         with open(output_filepath, "w") as f:
-            f.write(all_result_text)
+            f.write(output_format((hybridanalysis_result_json,triage_result_json,virustotal_result_json)))
+            # f.write(all_result_text)
 
 
 if __name__ == "__main__":
     main()
+
+

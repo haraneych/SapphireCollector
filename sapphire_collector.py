@@ -23,10 +23,10 @@ Welcome to SapphireCollector!
 
 
 def output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json, chatgpt_result):
-    print(f"""
+    result = f"""
 <name>
 VuirsTotal:{json.dumps(virustotal_result_json["name"],indent=2)}
-Triage:
+Triage:{json.dumps(triage_result_json["name"])}
 Hybrid analysis: {json.dumps(hybridanalysis_result_json["name"],indent=2)}
 
 <tags>
@@ -49,14 +49,15 @@ VuirsTotal:{json.dumps(virustotal_result_json["c2"],indent=2)}
 Triage:{json.dumps(triage_result_json["C2ip"],indent=2)}
 Hybrid analysis: {json.dumps(hybridanalysis_result_json["hosts"],indent=2)}
 
-""")
+"""
 
     if chatgpt_result:
-        print(f"""
+        result = result +  f"""
 <Summary of malware behavior>
 {chatgpt_result}
 
-""")
+"""
+    return result
 
 
 
@@ -102,7 +103,7 @@ def main():
     virustotal_result_json = extract_json(json.loads(json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)))
 
 
-    description =  [triage_result_json, hybridanalysis_result_json, virustotal_result_json]
+    description =  str(triage_result_json["behavior"]) + str(hybridanalysis_result_json["signatures"]) + str(virustotal_result_json["description"])
 
     chatgpt_result = ""
     if args.chatgpt:
@@ -113,16 +114,16 @@ def main():
 
 
 
+        result = output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
 
 
     if args.output :
         output_filepath = args.output
         with open(output_filepath, "w") as f:
-            f.write(output_allresult((hybridanalysis_result_json,triage_result_json,virustotal_result_json)))
+            f.write(result)
         
     else:
-        output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
-
+        print(result)
 
 if __name__ == "__main__":
     main()

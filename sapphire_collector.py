@@ -66,12 +66,23 @@ def main():
     parser.add_argument("-c", "--chatgpt", action="store_true", help="Chatgpt explains the behavior of malware.")
     parser.add_argument("-o", "--output", help="File path to output results.")
     args = parser.parse_args()
-
+    command_welcome()
     if args.hash is None:
-        command_welcome()
         parser.print_help()
         return
     
+    if not HYBRIDANALYSIS_APIKEY:
+        print('Error: Please set HybridAnalysis API key', file=sys.stderr)
+        sys.exit(1)
+    
+    if not TRIAGE_APIKEY:
+        print('Error: Please set Triage API key', file=sys.stderr)
+        sys.exit(1)
+
+    if not VIRUSTOTAL_APIKEY:
+        print('Error: Please set VirusTotal API key', file=sys.stderr)
+        sys.exit(1)
+        
     fileHash = args.hash
     hashType = None
     if len(fileHash) == 32:
@@ -84,18 +95,22 @@ def main():
     if hashType is None:
         print('Error: Only MDD5, SHA1, SHA256 can be used for hash type.', file=sys.stderr)
         sys.exit(1)
-
         
 
     hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
     triage_result_json = json.loads(json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4))
     virustotal_result_json = extract_json(json.loads(json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)))
 
+
     description =  [triage_result_json, hybridanalysis_result_json, virustotal_result_json]
+
     chatgpt_result = ""
     if args.chatgpt:
+        if not OPENAI_APIKEY:
+            print('Error: Please set OpenAI API key', file=sys.stderr)
+            sys.exit(1)
         chatgpt_result = summaryByChatgpt(OPENAI_APIKEY, description)
-    
+
 
 
 

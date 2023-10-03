@@ -4,9 +4,10 @@ import argparse
 
 from util.HashType import HashType
 from Triage.triage import searchTriage
-from HybridAnalysis.hybridanalysis import searchHybridAnalysis
-from VirusTotal.VirusTotal import serchVirusTotal
-from api_keys import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY
+from HybridAnalysis.hybridanalysis import searchHybridAnalysis,HybridRequiredData
+from VirusTotal.VirusTotal import serchVirusTotal,extract_json,UnixTime_to_Standard_time
+from chatgpt.chatgpt import summaryByChatgpt
+from api_keys import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY, OPENAI_APIKEY
 
 
 def command_welcome():
@@ -20,116 +21,42 @@ def command_welcome():
 Welcome to SapphireCollector!
 """)
 
-def HybridRequiredData(hybridanalysis_result):
-    
-    tags = []
-    name= []
-    url=[]
-    score_list=[]
-    vx_family=[]
-    analysis_start_time=[]
-    hosts=[]
-    domains=[]
-    signatures_list = []
-    Number_of_matchs = 0
 
-    def maxScore(score_list):
-        max_number = None
+def output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json, chatgpt_result):
+    print(f"""
+<name>
+VuirsTotal:{virustotal_result_json["name"]}
+Triage:
+Hybrid analysis: {hybridanalysis_result_json["name"]}
 
-        for item in score_list:
-            if isinstance(item, (int, float)):
-                if max_number is None or item > max_number:
-                    max_number = item
+<tags>
+VuirsTotal:{virustotal_result_json["tags"]}
+Triage:{triage_result_json["tag"]}
+Hybrid analysis: {hybridanalysis_result_json["tags"]}
 
-        if max_number is not None:
-            return max_number
-        else:
-            return None
-    
+<score>
+VuirsTotal:{virustotal_result_json["malicious"]}/{virustotal_result_json["malicious"]+virustotal_result_json["undetected"]}
+Triage:{triage_result_json["score"]}/10
+Hybrid analysis: {hybridanalysis_result_json["score"]}/100
 
-    def Delete_the_first_two_characters_in_list(your_list):
-        new_list = [item[2:] for item in your_list]
-        return new_list
-    
-    def Duplicate_removal_and_sorting(your_list):
-        new_list = sorted(list(set(your_list)))
-        return new_list
-    
-    
-    data_list = json.loads(hybridanalysis_result)
-    
-    for k in range(len(data_list)):
-        Number_of_matchs = Number_of_matchs + 1
-        data = data_list[k]
-        submiissions = data["submissions"]
-        for i in range(len(submiissions)):
-            target_name= submiissions[i]["filename"]
-            target_url = submiissions[i]["url"]
-            name.append(str(k+1) + ">" +str(target_name))
-            url.append(str(k+1) + ">" +str(target_url))
-        
-        classificationtags_list = data["classification_tags"]
-        tags_list = data["tags"]
-        for i in range(len(classificationtags_list)):
-            tags.append(str(k+1) + ">"+ str(classificationtags_list[i]))
-        for i in range(len(tags_list)):
-            tags.append(str(k+1) + ">" + str(tags_list[i]))
+<analysis start time>
+VuirsTotal:{virustotal_result_json["start_time"]}
+Triage:{triage_result_json["analsys_start_time"]}
+Hybrid analysis: {hybridanalysis_result_json["analsis_start_time"]}
 
-        score_list.append(data["threat_score"])
-        vx_family.append(str(k+1) +">" +str(data["vx_family"]))
-        analysis_start_time.append(str(k+1) + ">" +str(data["analysis_start_time"]))
+<Suspected IP Address of C2 Server>
+VuirsTotal:{virustotal_result_json["c2"]}
+Triage:{triage_result_json["C2ip"][0]["iocs"]["ips"]}
+Hybrid analysis: {hybridanalysis_result_json["hosts"]}
 
-        domains_list = data["domains"]
-        for i in range(len(domains_list)):
-            domains.append(str(k+1)+ ">"+ str(domains_list[i]))
+""")
 
-        hosts_list = data["hosts"]
-        for i in range(len(hosts_list)):
-            hosts.append(str(k+1) + ">"+ str(hosts_list[i]))
-        
-        signatures = data["signatures"]
+    if chatgpt_result:
+        print(f"""
+<Summary of malware behavior>
+{chatgpt_result}
 
-        if not signatures:
-            continue
-
-        for i in range(len(signatures)):
-            name_signature = data["signatures"][i]["name"]
-            description_signature = data["signatures"][i]["description"]
-
-            OneSignatureData ={
-                "name": name_signature,
-                "description":description_signature
-            }
-
-            signatures_list.append(OneSignatureData)
-
-    
-    tags = Duplicate_removal_and_sorting(tags)
-    name = Duplicate_removal_and_sorting(name)
-    url = Duplicate_removal_and_sorting(url)
-    vx_family = Duplicate_removal_and_sorting(vx_family)
-    analysis_start_time = Duplicate_removal_and_sorting(analysis_start_time)
-    domains = Duplicate_removal_and_sorting(domains)
-    hosts = Duplicate_removal_and_sorting(hosts)
-
-    score = maxScore(score_list)
-    
-    
-    OnlyNeedData = {
-        "matchs": Number_of_matchs,
-        "name": name,
-        "tags": tags,
-        "url": url,
-        "score": score,
-        "vx_family": vx_family,
-        "analsis_start_time": analysis_start_time,
-        "domains" : domains,
-        "hosts" : hosts,
-        "signatures":signatures_list
-    }
-        
-    result = json.dumps(OnlyNeedData,indent=5)
-    return result
+""")
 
 def result_format(hybridanalysis_result_json,triage_result_json,virustotal_result_json):
     print(f"""
@@ -168,6 +95,7 @@ Hybrid analysis: {hybridanalysis_result_json["hosts"]}
 def main():
     parser = argparse.ArgumentParser(description="Tool to search and collect malware information from multiple malware database services by hash value")
     parser.add_argument("hash", nargs="?", help="Hash value of malware to search for. MD5, SHA1, SHA256 can be used.")
+    parser.add_argument("-c", "--chatgpt", action="store_true", help="Chatgpt explains the behavior of malware.")
     parser.add_argument("-o", "--output", help="File path to output results.")
     args = parser.parse_args()
 
@@ -188,6 +116,7 @@ def main():
     if hashType is None:
         print('Error: Only MDD5, SHA1, SHA256 can be used for hash type.', file=sys.stderr)
         sys.exit(1)
+<<<<<<< HEAD
     
 
     #従来
@@ -219,6 +148,34 @@ def main():
         with open(output_filepath, "w") as f:
             f.write(result_format((hybridanalysis_result_json,triage_result_json,virustotal_result_json)))
             # f.write(all_result_text)
+=======
+        
+
+    #本番で使う////
+    hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
+    triage_result_json = json.loads(json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4))
+    virustotal_result_json = extract_json(json.loads(json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)))
+    #本番ここまで////
+    # description =  [triage_result_json, hybridanalysis_result_json, virustotal_result_json]
+    chatgpt_result = ""
+    if args.chatgpt:
+        chatgpt_result = summaryByChatgpt(OPENAI_APIKEY, description)
+    
+    #ここから(削除予定)////
+    # with open("resultTriage.json","r") as file:
+    #     triage_result_json = json.load(file)
+    #ここまで/////
+
+
+
+
+    if args.output :
+        output_filepath = args.output
+        with open(output_filepath, "w") as f:
+            f.write(output_allresult((hybridanalysis_result_json,triage_result_json,virustotal_result_json)))
+    else:
+        output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
+>>>>>>> cc23b505195d0d63f65034afbb2a9c695427f856
 
 
 if __name__ == "__main__":

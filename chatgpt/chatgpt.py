@@ -10,7 +10,7 @@ def summaryByChatgpt(apikey: str, description):
         なお，情報源は下記のマルウェアの情報のみとし，下記の情報から読み取れる情報をすべて列挙してください．
         ''' + description
         res = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-16k",
         messages=[
             {"role": "user", "content": content},
         ],

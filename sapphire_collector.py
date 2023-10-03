@@ -116,39 +116,7 @@ def main():
     if hashType is None:
         print('Error: Only MDD5, SHA1, SHA256 can be used for hash type.', file=sys.stderr)
         sys.exit(1)
-<<<<<<< HEAD
-    
 
-    #従来
-    # triage_result = "[[Triage]]\n" + json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4)
-    # hybridanalysis_result = "[[Hybrid Anarysis]]\n" + HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4))
-    # virustotal_result = "[[VirusTotal]]\n" + json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)
-    # result_list = [triage_result, hybridanalysis_result, virustotal_result]
-    # all_result_text = "\n".join(result_list)
-
-    
-    with open("VT.json","r") as file:
-        virustotal_result_json = json.load(file)
-    
-    with open("resultTriage.json","r") as file:
-        triage_result_json = json.load(file)
-    
-    #今回
-    hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
-    # triage_result_json = {}
-    # virustotal_result_json = {}
-
-
-    
-    if args.output is None:
-        result_format(hybridanalysis_result_json,triage_result_json,virustotal_result_json)
-        # print(all_result_text)
-    else:
-        output_filepath = args.output
-        with open(output_filepath, "w") as f:
-            f.write(result_format((hybridanalysis_result_json,triage_result_json,virustotal_result_json)))
-            # f.write(all_result_text)
-=======
         
 
     #本番で使う////
@@ -175,8 +143,6 @@ def main():
             f.write(output_allresult((hybridanalysis_result_json,triage_result_json,virustotal_result_json)))
     else:
         output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
->>>>>>> cc23b505195d0d63f65034afbb2a9c695427f856
-
 
 if __name__ == "__main__":
     main()

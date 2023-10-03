@@ -30,13 +30,13 @@ def searchTriage(hashType: HashType,fileHash: string, apiKey: string):
         return
     result = response.json()
     extract_result = {}
-
+    extract_result["name"] = result["signatures"][0]["name"]
     extract_result["score"] = result["analysis"]["score"]
     extract_result["tag"] = result["analysis"]["tags"]
     extract_result["analsys_start_time"] = result["sample"]["created"]
     extract_result["filetype"] = result["tasks"]
-    extract_result["C2ip"] = result["targets"]
-    extract_result["name&behavior"] = result["signatures"]
+    extract_result["C2ip"] = result["targets"][0]["iocs"]
+    extract_result["behavior"] = result["signatures"]
 
     return extract_result
     #print(json.dumps(result, indent=4))

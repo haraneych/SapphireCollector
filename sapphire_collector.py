@@ -7,7 +7,7 @@ from Triage.triage import searchTriage
 from HybridAnalysis.hybridanalysis import searchHybridAnalysis,HybridRequiredData
 from VirusTotal.VirusTotal import serchVirusTotal,extract_json,UnixTime_to_Standard_time
 from chatgpt.chatgpt import summaryByChatgpt
-from api_keys import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY, OPENAI_APIKEY
+from api_keys import TRIAGE_APIKEY, HYBRIDANALYSIS_APIKEY, VIRUSTOTAL_APIKEY
 
 
 def command_welcome():
@@ -57,6 +57,40 @@ Hybrid analysis: {hybridanalysis_result_json["hosts"]}
 {chatgpt_result}
 
 """)
+
+def result_format(hybridanalysis_result_json,triage_result_json,virustotal_result_json):
+    print(f"""
+<name>
+VuirsTotal:{json.dumps(virustotal_result_json["name"],indent=2)}
+Triage:
+Hybrid analysis: {json.dumps(hybridanalysis_result_json["name"],indent=2)}
+
+<tags>
+VuirsTotal:{virustotal_result_json["tags"]}
+Triage:{triage_result_json["tag"]}
+Hybrid analysis: {hybridanalysis_result_json["tags"]}
+
+<score>
+VuirsTotal:{virustotal_result_json["malicious"]}/100
+Triage:{triage_result_json["score"]}/10
+Hybrid analysis: {hybridanalysis_result_json["score"]}/100
+
+<analysis start time>
+VuirsTotal:{virustotal_result_json["start_time"]}
+Triage:{triage_result_json["analsys_start_time"]}
+Hybrid analysis: {hybridanalysis_result_json["analsis_start_time"]}
+
+<Suspected IP Address of C2 Server>
+VuirsTotal:{json.dumps(virustotal_result_json["c2"],indent=2)}
+Triage:
+Hybrid analysis: {json.dumps(hybridanalysis_result_json["hosts"],indent=2)}
+
+<Summary of malware behavior>
+ここにChatGPTの要約をいれる
+
+
+""")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Tool to search and collect malware information from multiple malware database services by hash value")

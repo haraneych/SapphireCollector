@@ -124,7 +124,7 @@ def HybridRequiredData(hybridanalysis_result):
         "url": url,
         "score": score,
         "vx_family": vx_family,
-        "analsis_start_time": analysis_start_time,
+        "analysis_start_time": analysis_start_time,
         "domains" : domains,
         "hosts" : hosts,
         "signatures":signatures_list

@@ -2,7 +2,7 @@ import string
 from util.HashType import HashType
 import requests
 from requests import RequestException
-#import json
+import json
 
 url = {
     HashType.SHA1:"https://api.tria.ge/v0/search?query=sha1:",
@@ -27,16 +27,23 @@ def searchTriage(hashType: HashType,fileHash: string, apiKey: string):
     except RequestException as e:
         return e.response.text
     except IndexError:
-        return
+        extract_result = {}
+        extract_result["name"] = ""
+        extract_result["tags"] = ""
+        extract_result["score"] = ""
+        extract_result["analysis_start_time"] = ""
+        extract_result["C2ip"] = ""
+        extract_result["description"] = ""
+        return extract_result
     result = response.json()
     extract_result = {}
     extract_result["name"] = result["signatures"][0]["name"]
     extract_result["score"] = result["analysis"]["score"]
-    extract_result["tag"] = result["analysis"]["tags"]
-    extract_result["analsys_start_time"] = result["sample"]["created"]
-    extract_result["filetype"] = result["tasks"]
+    extract_result["tags"] = result["analysis"]["tags"]
+    extract_result["analysis_start_time"] = result["sample"]["created"]
+    extract_result["filetype"] = result.get("tasks")
     extract_result["C2ip"] = result["targets"][0]["iocs"]
-    extract_result["behavior"] = result["signatures"]
+    extract_result["behavior"] = result.get("signatures")
 
     return extract_result
     #print(json.dumps(result, indent=4))

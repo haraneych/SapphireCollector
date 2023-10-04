@@ -18,4 +18,4 @@ def summaryByChatgpt(apikey: str, description):
         ans = res.choices[0]["message"]["content"].strip() 
         return ans
     except openai.error.InvalidRequestError as e:
-        return "要約出来ませんでした"
+        return "Sorry, can't summarize."

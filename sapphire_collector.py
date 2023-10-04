@@ -26,23 +26,23 @@ def output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_re
     result = f"""
 <name>
 VuirsTotal:{json.dumps(virustotal_result_json["name"],indent=2)}
-Triage:{json.dumps(triage_result_json["name"])}
+Triage:{json.dumps(triage_result_json["name"],indent=2)}
 Hybrid analysis: {json.dumps(hybridanalysis_result_json["name"],indent=2)}
 
 <tags>
 VuirsTotal:{json.dumps(virustotal_result_json["tags"],indent=2)}
-Triage:{json.dumps(triage_result_json["tag"],indent=2)}
+Triage:{json.dumps(triage_result_json["tags"],indent=2)}
 Hybrid analysis: {json.dumps(hybridanalysis_result_json["tags"],indent=2)}
 
 <score>
-VuirsTotal:{virustotal_result_json["malicious"]}/100
+VuirsTotal:{virustotal_result_json["malicious"]}/{virustotal_result_json["malicious"]+virustotal_result_json["undetected"]}
 Triage:{triage_result_json["score"]}/10
 Hybrid analysis: {hybridanalysis_result_json["score"]}/100
 
 <analysis start time>
-VuirsTotal:{virustotal_result_json["start_time"]}
-Triage:{triage_result_json["analsys_start_time"]}
-Hybrid analysis: {hybridanalysis_result_json["analsis_start_time"]}
+VuirsTotal:{virustotal_result_json["analysis_start_time"]}
+Triage:{triage_result_json["analysis_start_time"]}
+Hybrid analysis: {hybridanalysis_result_json["analysis_start_time"]}
 
 <Suspected IP Address of C2 Server>
 VuirsTotal:{json.dumps(virustotal_result_json["c2"],indent=2)}
@@ -112,14 +112,18 @@ def main():
         hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
         triage_result_json = json.loads(json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4))
         virustotal_result_json = extract_json(json.loads(json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)))
-        description =  str(triage_result_json["behavior"]) + str(hybridanalysis_result_json["signatures"]) + str(virustotal_result_json["description"])
-
+        
         chatgpt_result = ""
         if args.chatgpt:
             if not OPENAI_APIKEY:
                 print('Error: Please set OpenAI API key', file=sys.stderr)
                 sys.exit(1)
-            chatgpt_result = summaryByChatgpt(OPENAI_APIKEY, description)
+            description =  str(triage_result_json.get("behavior")) + str(hybridanalysis_result_json.get("signatures")) + str(virustotal_result_json.get("description"))
+            if description == "None[]None":
+                chatgpt_result = "Sorry, can't summarize."
+            else:
+                description =  str(triage_result_json.get("behavior")) + str(hybridanalysis_result_json.get("signatures")) + str(virustotal_result_json.get("description"))
+                chatgpt_result = summaryByChatgpt(OPENAI_APIKEY, description)
         result = output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
 
     if args.output :

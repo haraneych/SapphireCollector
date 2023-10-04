@@ -26,16 +26,26 @@ def extract_json(data):
     try:
         attribute = data["data"]["attributes"]
         extracted_data = {}
-        extracted_data["name"] = attribute["names"]
-        extracted_data["tags"] = attribute["tags"]
+        extracted_data["name"] = attribute.get("names")
+        extracted_data["tags"] = attribute.get("tags")
         extracted_data["malicious"] = attribute["last_analysis_stats"]["malicious"]
         extracted_data["undetected"] = attribute["last_analysis_stats"]["undetected"]
-        extracted_data["start_time"] = UnixTime_to_Standard_time(attribute["first_submission_date"])
+        extracted_data["analysis_start_time"] = UnixTime_to_Standard_time(attribute["first_submission_date"])
         extracted_data["c2"] = ""
         extracted_data["description"] = attribute.get("crowdsourced_ids_results")
         return extracted_data
     except json.JSONDecodeError:
         return None  # 不正なJSONの場合はNoneを返す
+    except TypeError:
+        extracted_data = {}
+        extracted_data["name"] = ""
+        extracted_data["tags"] = ""
+        extracted_data["malicious"] = ""
+        extracted_data["undetected"] = ""
+        extracted_data["analysis_start_time"] = ""
+        extracted_data["c2"] = ""
+        extracted_data["description"] = None
+        return extracted_data
 
 def UnixTime_to_Standard_time(unixtime):
     standard_time = datetime.datetime.utcfromtimestamp(unixtime)

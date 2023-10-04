@@ -60,7 +60,6 @@ Hybrid analysis: {json.dumps(hybridanalysis_result_json["hosts"],indent=2)}
     return result
 
 
-
 def main():
     parser = argparse.ArgumentParser(description="Tool to search and collect malware information from multiple malware database services by hash value")
     parser.add_argument("hash", nargs="?", help="Hash value of malware to search for. MD5, SHA1, SHA256 can be used.")
@@ -72,7 +71,11 @@ def main():
     if args.hash is None:
         parser.print_help()
         return
-    
+
+    if args.all and args.chatgpt:
+        print('Sorry, -a and -c cannot be used at the same time')
+        sys.exit(1)
+
     if not HYBRIDANALYSIS_APIKEY:
         print('Error: Please set HybridAnalysis API key', file=sys.stderr)
         sys.exit(1)

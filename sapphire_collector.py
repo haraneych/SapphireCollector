@@ -111,10 +111,7 @@ def main():
             print('Error: Please set OpenAI API key', file=sys.stderr)
             sys.exit(1)
         chatgpt_result = summaryByChatgpt(OPENAI_APIKEY, description)
-
-
-
-        result = output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
+    result = output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
 
 
     if args.output :

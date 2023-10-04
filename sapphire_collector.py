@@ -64,6 +64,7 @@ Hybrid analysis: {json.dumps(hybridanalysis_result_json["hosts"],indent=2)}
 def main():
     parser = argparse.ArgumentParser(description="Tool to search and collect malware information from multiple malware database services by hash value")
     parser.add_argument("hash", nargs="?", help="Hash value of malware to search for. MD5, SHA1, SHA256 can be used.")
+    parser.add_argument("-a", "--all", action="store_true", help="Show all results")
     parser.add_argument("-c", "--chatgpt", action="store_true", help="Chatgpt explains the behavior of malware.")
     parser.add_argument("-o", "--output", help="File path to output results.")
     args = parser.parse_args()
@@ -97,22 +98,26 @@ def main():
         print('Error: Only MDD5, SHA1, SHA256 can be used for hash type.', file=sys.stderr)
         sys.exit(1)
         
+    if args.all:
+        triage_result = "[[Triage]]\n" + json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4)
+        hybridanalysis_result = "[[Hybrid Anarysis]]\n" + json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)
+        virustotal_result = "[[VirusTotal]]\n" + json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)
+        result_list = [triage_result, hybridanalysis_result, virustotal_result]
+        result = "\n".join(result_list)  
+        
+    else:
+        hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
+        triage_result_json = json.loads(json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4))
+        virustotal_result_json = extract_json(json.loads(json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)))
+        description =  str(triage_result_json["behavior"]) + str(hybridanalysis_result_json["signatures"]) + str(virustotal_result_json["description"])
 
-    hybridanalysis_result_json = json.loads(HybridRequiredData(json.dumps(searchHybridAnalysis(fileHash, HYBRIDANALYSIS_APIKEY), indent=4)))
-    triage_result_json = json.loads(json.dumps(searchTriage(hashType, fileHash, TRIAGE_APIKEY), indent=4))
-    virustotal_result_json = extract_json(json.loads(json.dumps(serchVirusTotal(fileHash, VIRUSTOTAL_APIKEY), indent=4)))
-
-
-    description =  str(triage_result_json["behavior"]) + str(hybridanalysis_result_json["signatures"]) + str(virustotal_result_json["description"])
-
-    chatgpt_result = ""
-    if args.chatgpt:
-        if not OPENAI_APIKEY:
-            print('Error: Please set OpenAI API key', file=sys.stderr)
-            sys.exit(1)
-        chatgpt_result = summaryByChatgpt(OPENAI_APIKEY, description)
-    result = output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
-
+        chatgpt_result = ""
+        if args.chatgpt:
+            if not OPENAI_APIKEY:
+                print('Error: Please set OpenAI API key', file=sys.stderr)
+                sys.exit(1)
+            chatgpt_result = summaryByChatgpt(OPENAI_APIKEY, description)
+        result = output_allresult(hybridanalysis_result_json,triage_result_json,virustotal_result_json,chatgpt_result)
 
     if args.output :
         output_filepath = args.output
